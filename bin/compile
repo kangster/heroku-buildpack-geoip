@@ -49,7 +49,7 @@ fi
 
 GEOCOUNTRY_LITE_PATH="/app/${GEOLITECOUNTRY_FILE}"
 set-env "GEOCOUNTRY_LITE_PATH" $GEOCOUNTRY_LITE_PATH
-puts "GeoIP Country Database is available at:${GEOCOUNTRY_LITE_PATH}"
+puts "GeoIP Country Database is available at: ${GEOCOUNTRY_LITE_PATH}"
 
 if [ ! -f $GEOLITECITY_FILE ]; then
     curl -s -L -o ${GEOLITECITY_FILE}.gz $GEOLITECITY_URL
@@ -58,4 +58,4 @@ fi
 
 GEOCITY_LITE_PATH="/app/${GEOLITECITY_FILE}"
 set-env "GEOCITY_LITE_PATH" $GEOCITY_LITE_PATH
-puts "GeoIP City Database is available at:${GEOCITY_LITE_PATH}"
+puts "GeoIP City Database is available at: ${GEOCITY_LITE_PATH}"
