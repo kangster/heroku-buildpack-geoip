@@ -55,7 +55,7 @@ if [ ! -f $GEOLITECITY_FILE ]; then
     curl -s -L -o ${GEOLITECITY_FILE}.gz $GEOLITECITY_URL
     gunzip ${GEOLITECITY_FILE}.gz > /dev/null
 fi
-# 
-# GEOCITY_LITE_PATH="/app/${GEOLITECITY_FILE}"
-# set-env "GEOCITY_LITE_PATH" $GEOCITY_LITE_PATH
-# puts "GeoIP City Database is available at:${GEOCITY_LITE_PATH}"
+
+GEOCITY_LITE_PATH="/app/${GEOLITECITY_FILE}"
+set-env "GEOCITY_LITE_PATH" $GEOCITY_LITE_PATH
+puts "GeoIP City Database is available at:${GEOCITY_LITE_PATH}"
