@@ -51,20 +51,14 @@ if [ ! -f $CACHE_FILE ]; then
     curl -s -L -o ${GEOLITECOUNTRY_FILE}.gz $GEOLITECOUNTRY_URL
     gunzip ${GEOLITECOUNTRY_FILE}.gz
   fi
-
-  GEOCOUNTRY_LITE_PATH="$INSTALL_DIR/${GEOLITECOUNTRY_FILE}"
-  set-env "GEOCOUNTRY_LITE_PATH" $GEOCOUNTRY_LITE_PATH
-  puts "GeoIP Country Database is available at: ${GEOCOUNTRY_LITE_PATH}"
+  set-env "GEOCOUNTRY_LITE_PATH" "$INSTALL_DIR/${GEOLITECOUNTRY_FILE}"
 
   if [ ! -f $GEOLITECITY_FILE ]; then
     puts-step "Downloading GeoLite City File: $GEOLITECITY_URL"
     curl -s -L -o ${GEOLITECITY_FILE}.gz $GEOLITECITY_URL
     gunzip ${GEOLITECITY_FILE}.gz
   fi
-
-  GEOCITY_LITE_PATH="$INSTALL_DIR/${GEOLITECITY_FILE}"
-  set-env "GEOCITY_LITE_PATH" $GEOCITY_LITE_PATH
-  puts "GeoIP City Database is available at: ${GEOCITY_LITE_PATH}"
+  set-env "GEOCITY_LITE_PATH" "$INSTALL_DIR/${GEOLITECITY_FILE}"
   
   # cache for future deploys
   cd $VENDOR_DIR
