@@ -12,15 +12,16 @@ ROOT_DIR=$(dirname $BIN_DIR)
 # Syntax sugar.
 source $BIN_DIR/utils
 
-GEOIP_VERSION="1.6.5"
+GEOIP_VERSION="1.6.9"
 
-VENDORED_GEOIP="vendor/geoip/1.6.5"
-APP_GEOIP="/app/$VENDORED_GEOIP"
+VENDOR_DIR="$BUILD_DIR/vendor"
+INSTALL_DIR="$VENDOR_DIR/geoip"
+CACHE_FILE="$CACHE_DIR/geoip-$GEOIP_VERSION.tar.gz"
 
 # Maxmind GeoIP C library
 
-GEOIP_DIST_URL="https://github.com/maxmind/geoip-api-c/releases/download/v$GEOIP_VERSION/GeoIP-$GEOIP_VERSION.tar.gz"
 GEOIP_DIST_DIR="GeoIP-$GEOIP_VERSION"
+GEOIP_DIST_URL="https://github.com/maxmind/geoip-api-c/releases/download/v$GEOIP_VERSION/$GEOIP_DIST_DIR.tar.gz"
 
 GEOLITECITY_URL="http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz"
 GEOLITECITY_FILE="GeoLiteCity.dat"
@@ -28,34 +29,46 @@ GEOLITECITY_FILE="GeoLiteCity.dat"
 GEOLITECOUNTRY_URL="http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz"
 GEOLITECOUNTRY_FILE="GeoIP.dat"
 
+mkdir -p $VENDOR_DIR
+mkdir -p $INSTALL_DIR
 
-puts-step "Installing Maxmind GeoIP C Library $GEOIP_VERSION"
-if [ ! -d "$CACHE_DIR/.geoip/$GEOIP_VERSION" ]; then
-    mkdir -p $CACHE_DIR/.geoip/$GEOIP_VERSION
-fi
-
-curl -s -L -o geoip.tar.gz $GEOIP_DIST_URL
-tar -zxvf geoip.tar.gz > /dev/null
-cd $GEOIP_DIST_DIR
-./configure --prefix=$BUILD_DIR/.heroku/vendor > /dev/null
-make install > /dev/null
-
-cd $BUILD_DIR
-
-if [ ! -f $GEOLITECOUNTRY_FILE ]; then
+if [ ! -f $CACHE_FILE ]; then
+  puts-step "Installing GeoIP from source"
+  puts "Downloading from: $GEOIP_DIST_URL"
+  
+  cd $VENDOR_DIR
+  curl -s -L -o geoip.tar.gz $GEOIP_DIST_URL
+  tar -zxf geoip.tar.gz
+  cd $GEOIP_DIST_DIR
+  ./configure --prefix=$INSTALL_DIR
+  make install
+  
+  cd $INSTALL_DIR
+  if [ ! -f $GEOLITECOUNTRY_FILE ]; then
+    puts-step "Downloading GeoLite Country File: $GEOLITECOUNTRY_URL"
     curl -s -L -o ${GEOLITECOUNTRY_FILE}.gz $GEOLITECOUNTRY_URL
-    gunzip ${GEOLITECOUNTRY_FILE}.gz > /dev/null
-fi
+    gunzip ${GEOLITECOUNTRY_FILE}.gz
+  fi
 
-GEOCOUNTRY_LITE_PATH="/app/${GEOLITECOUNTRY_FILE}"
-set-env "GEOCOUNTRY_LITE_PATH" $GEOCOUNTRY_LITE_PATH
-puts "GeoIP Country Database is available at: ${GEOCOUNTRY_LITE_PATH}"
+  GEOCOUNTRY_LITE_PATH="$INSTALL_DIR/${GEOLITECOUNTRY_FILE}"
+  set-env "GEOCOUNTRY_LITE_PATH" $GEOCOUNTRY_LITE_PATH
+  puts "GeoIP Country Database is available at: ${GEOCOUNTRY_LITE_PATH}"
 
-if [ ! -f $GEOLITECITY_FILE ]; then
+  if [ ! -f $GEOLITECITY_FILE ]; then
+    puts-step "Downloading GeoLite City File: $GEOLITECITY_URL"
     curl -s -L -o ${GEOLITECITY_FILE}.gz $GEOLITECITY_URL
-    gunzip ${GEOLITECITY_FILE}.gz > /dev/null
-fi
+    gunzip ${GEOLITECITY_FILE}.gz
+  fi
 
-GEOCITY_LITE_PATH="/app/${GEOLITECITY_FILE}"
-set-env "GEOCITY_LITE_PATH" $GEOCITY_LITE_PATH
-puts "GeoIP City Database is available at: ${GEOCITY_LITE_PATH}"
+  GEOCITY_LITE_PATH="$INSTALL_DIR/${GEOLITECITY_FILE}"
+  set-env "GEOCITY_LITE_PATH" $GEOCITY_LITE_PATH
+  puts "GeoIP City Database is available at: ${GEOCITY_LITE_PATH}"
+  
+  # cache for future deploys
+  cd $VENDOR_DIR
+  tar czf geoip-cache.tar.gz geoip
+  mv geoip-cache.tar.gz $CACHE_FILE
+else
+  puts-step "Extracting GeoIP $CACHE_FILE => $VENDOR_DIR"
+  tar xzf $CACHE_FILE -C $VENDOR_DIR
+fi
