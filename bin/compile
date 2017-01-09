@@ -16,6 +16,7 @@ GEOIP_VERSION="1.6.9"
 
 VENDOR_DIR="$BUILD_DIR/vendor"
 INSTALL_DIR="$VENDOR_DIR/geoip"
+DATA_DIR="$INSTALL_DIR/data"
 CACHE_FILE="$CACHE_DIR/geoip-$GEOIP_VERSION.tar.gz"
 
 # Maxmind GeoIP C library
@@ -31,6 +32,7 @@ GEOLITECOUNTRY_FILE="GeoIP.dat"
 
 mkdir -p $VENDOR_DIR
 mkdir -p $INSTALL_DIR
+mkdir -p $DATA_DIR
 
 if [ ! -f $CACHE_FILE ]; then
   puts-step "Installing GeoIP from source"
@@ -38,12 +40,12 @@ if [ ! -f $CACHE_FILE ]; then
   
   cd $VENDOR_DIR
   curl -s -L -o geoip.tar.gz $GEOIP_DIST_URL
-  tar -zxf geoip.tar.gz
+  tar -zxf geoip.tar.gz > /dev/null 
   cd $GEOIP_DIST_DIR
-  ./configure --prefix=$INSTALL_DIR
-  make install
+  ./configure --prefix=$INSTALL_DIR > /dev/null
+  make install > /dev/null
   
-  cd $INSTALL_DIR
+  cd $DATA_DIR
   if [ ! -f $GEOLITECOUNTRY_FILE ]; then
     puts-step "Downloading GeoLite Country File: $GEOLITECOUNTRY_URL"
     curl -s -L -o ${GEOLITECOUNTRY_FILE}.gz $GEOLITECOUNTRY_URL
